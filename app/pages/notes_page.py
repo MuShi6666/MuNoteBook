@@ -304,7 +304,13 @@ class NotesPage(QWidget):
         )
         if not path_list:
             return
+        self.import_document_paths(path_list)
 
+    def import_document_paths(self, path_list) -> list[int]:
+        """导入指定路径的文档（菜单导入与命令行「打开方式」共用）。
+
+        返回成功创建的笔记 id 列表。
+        """
         imported_ids: list[int] = []
         failed: list[str] = []
         for path_str in path_list:
@@ -365,6 +371,7 @@ class NotesPage(QWidget):
                 position=InfoBarPosition.TOP,
                 duration=2500,
             )
+        return imported_ids
 
     # ---------- 导出 ----------
 

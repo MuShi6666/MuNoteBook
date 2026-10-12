@@ -129,6 +129,16 @@ class MainWindow(FluentWindow):
         for page in (self.notes_page, self.favorites_page, self.trash_page):
             page.refresh()
 
+    def open_document_paths(self, path_list) -> None:
+        """供命令行 / 右键「打开方式」调用：导入外部文档并选中。"""
+        if not path_list:
+            return
+        try:
+            self.switchTo(self.notes_page)
+        except AttributeError:
+            self.stackedWidget.setCurrentWidget(self.notes_page)
+        self.notes_page.import_document_paths(path_list)
+
     # ---------- 主题 ----------
 
     def apply_theme(self, mode: str, color: Optional[str] = None) -> None:
