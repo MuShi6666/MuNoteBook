@@ -1,14 +1,25 @@
-"""设置页：主题模式、主题色、自动保存、关于。"""
+"""设置页：主题模式、主题色、自动保存、存储位置、关于。"""
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QHBoxLayout, QPushButton, QVBoxLayout, QWidget
+from PySide6.QtWidgets import (
+    QFileDialog,
+    QHBoxLayout,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
 from qfluentwidgets import (
     BodyLabel,
     ComboBox,
+    InfoBar,
+    InfoBarPosition,
+    MessageBox,
+    PushButton,
     ScrollArea,
     SubtitleLabel,
     SwitchButton,
@@ -51,6 +62,7 @@ class SettingsPage(ScrollArea):
 
         layout.addWidget(self._build_appearance_group())
         layout.addWidget(self._build_editor_group())
+        layout.addWidget(self._build_storage_group())
         layout.addWidget(self._build_about_group())
         layout.addStretch(1)
 
@@ -131,12 +143,76 @@ class SettingsPage(ScrollArea):
 
         return group
 
+    def _build_storage_group(self) -> QWidget:
+        group, layout = self._make_group("存储")
+
+        card, row = self._make_card(
+            "存储位置", "笔记数据库、图片库与文档库的存放目录"
+        )
+        self.storage_path_label = BodyLabel(str(config.storage_root()))
+        self.storage_path_label.setObjectName("storagePathLabel")
+        self.storage_path_label.setWordWrap(True)
+        row.addWidget(self.storage_path_label, 1)
+        self.storage_change_btn = PushButton("更改…", self)
+        self.storage_change_btn.setToolTip("选择新的存储位置（自动迁移数据）")
+        self.storage_change_btn.clicked.connect(self._on_change_storage)
+        row.addWidget(self.storage_change_btn)
+        layout.addWidget(card)
+
+        card, _ = self._make_card(
+            "说明",
+            "更改后会把数据库、图片和导入的文档复制到新位置；\n"
+            "旧位置的数据会保留，确认无误后可手动删除。",
+        )
+        layout.addWidget(card)
+
+        return group
+
+    def _on_change_storage(self) -> None:
+        """选择新的存储位置并执行迁移。"""
+        current = config.storage_root()
+        chosen = QFileDialog.getExistingDirectory(
+            self, "选择存储位置", str(current)
+        )
+        if not chosen:
+            return
+        new_path = Path(chosen).resolve()
+        if new_path == current.resolve():
+            return
+
+        box = MessageBox(
+            "更改存储位置",
+            f"将把笔记数据库、图片库和文档库复制到：\n{new_path}\n\n"
+            "旧位置的数据会保留，确认无误后可手动删除。\n是否继续？",
+            self,
+        )
+        if not box.exec():
+            return
+
+        if self._window.change_storage_location(new_path):
+            self.storage_path_label.setText(str(new_path))
+            InfoBar.success(
+                title="存储位置已更改",
+                content=str(new_path),
+                parent=self,
+                position=InfoBarPosition.TOP,
+                duration=3000,
+            )
+        else:
+            InfoBar.error(
+                title="更改失败",
+                content="迁移过程中出错，已恢复原存储位置",
+                parent=self,
+                position=InfoBarPosition.TOP,
+                duration=4000,
+            )
+
     def _build_about_group(self) -> QWidget:
         group, layout = self._make_group("关于")
         card, _ = self._make_card(
             f"{config.APP_NAME} v{__version__}",
-            "基于 PySide6 与 PySide6-Fluent-Widgets 的 Markdown 记事本\n"
-            "数据存储于本地 SQLite（notes.db）",
+            "基于 PySide6 与 PySide6-Fluent-Widgets 的 Markdown 笔记应用\n"
+            "数据存储于本地 SQLite，存储位置可在上方更改",
         )
         layout.addWidget(card)
         return group

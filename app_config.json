@@ -2,5 +2,7 @@
   "theme_mode": "light",
   "theme_color": "#0067C0",
   "auto_save": true,
-  "editor_mode": "edit"
+  "editor_mode": "split",
+  "list_width": 280,
+  "storage_dir": ""
 }

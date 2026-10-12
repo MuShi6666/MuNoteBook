@@ -1,4 +1,4 @@
-/* Fluent 记事本 - 全局 QSS 样式（静态部分）
+/* MuNoteBook - 全局 QSS 样式（静态部分）
  * 主题相关颜色（卡片/列表文字）由 app.main_window.build_app_qss()
  * 在启动和主题切换时动态追加，此处仅放不随主题变化的样式。
  */
@@ -10,12 +10,31 @@
     background: transparent;
 }
 
+/* ============ 页面分割条（列表宽度可拖拽调整） ============ */
+QSplitter#pageSplitter::handle {
+    background: rgba(128, 128, 128, 0.15);
+    width: 3px;
+}
+
+QSplitter#pageSplitter::handle:hover {
+    background: rgba(0, 103, 192, 0.45);
+}
+
+QSplitter#pageSplitter::handle:pressed {
+    background: rgba(0, 103, 192, 0.7);
+}
+
 /* ============ 设置卡片 ============ */
 #settingCard {
     border-radius: 8px;
 }
 
 BodyLabel#captionLabel {
+    font-size: 12px;
+    color: rgba(128, 128, 128, 0.95);
+}
+
+BodyLabel#storagePathLabel {
     font-size: 12px;
     color: rgba(128, 128, 128, 0.95);
 }

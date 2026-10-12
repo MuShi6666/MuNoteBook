@@ -15,6 +15,8 @@ _DEFAULTS = {
     "theme_color": config.DEFAULT_THEME_COLOR,    # 主题色（十六进制）
     "auto_save": True,                            # 编辑器自动保存开关
     "editor_mode": "split",                       # 编辑器视图：edit / preview / split
+    "list_width": config.LIST_WIDTH,              # 笔记列表面板宽度（可拖拽调整）
+    "storage_dir": "",                            # 数据存储位置（空 = 项目根目录）
 }
 
 
@@ -104,6 +106,27 @@ class AppSettings:
     @editor_mode.setter
     def editor_mode(self, value: str) -> None:
         self.set("editor_mode", value)
+
+    @property
+    def list_width(self) -> int:
+        value = self.get("list_width")
+        if isinstance(value, int) and value >= config.MIN_LIST_WIDTH:
+            return value
+        return config.LIST_WIDTH
+
+    @list_width.setter
+    def list_width(self, value: int) -> None:
+        self.set("list_width", int(value))
+
+    @property
+    def storage_dir(self) -> str:
+        """数据存储位置（空字符串表示使用默认的项目根目录）。"""
+        value = self.get("storage_dir")
+        return value if isinstance(value, str) else ""
+
+    @storage_dir.setter
+    def storage_dir(self, value) -> None:
+        self.set("storage_dir", str(value) if value else "")
 
 
 settings = AppSettings()

@@ -1,6 +1,5 @@
-# 简易记事本（notepad.py）与 Fluent 记事本（main.py）共用依赖
-# 注意：PySide6-Fluent-Widgets 与 PyQt-Fluent-Widgets 包名不同但导入名都是
-# qfluentwidgets，切勿同时安装，否则会互相覆盖
-PySide6>=6.5
-PySide6-Fluent-Widgets>=1.5.0
+PySide6==6.11.2
+PySide6-Fluent-Widgets==1.11.3
 markdown>=3.6
+python-docx>=1.1
+PyMuPDF>=1.24

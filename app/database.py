@@ -28,7 +28,10 @@ CREATE TABLE IF NOT EXISTS notes (
     updated_at  TEXT NOT NULL,
     is_pinned   INTEGER NOT NULL DEFAULT 0,
     is_favorite INTEGER NOT NULL DEFAULT 0,
-    is_deleted  INTEGER NOT NULL DEFAULT 0
+    is_deleted  INTEGER NOT NULL DEFAULT 0,
+    source_path TEXT,
+    source_type TEXT,
+    content_type TEXT NOT NULL DEFAULT 'md'
 );
 CREATE INDEX IF NOT EXISTS idx_notes_state ON notes (is_deleted, is_pinned DESC, updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_notes_favorite ON notes (is_favorite, is_deleted, updated_at DESC);
@@ -36,6 +39,7 @@ CREATE INDEX IF NOT EXISTS idx_notes_favorite ON notes (is_favorite, is_deleted,
 
 _LIST_COLUMNS = """
     id, title, created_at, updated_at, is_pinned, is_favorite, is_deleted,
+    source_path, source_type, content_type,
     substr(content, 1, :limit) AS summary
 """
 
@@ -59,9 +63,28 @@ class Database:
         return self._conn
 
     def init_schema(self) -> None:
-        """建表与索引（幂等）。"""
+        """建表与索引（幂等），并为旧版数据库补充新增列。"""
         with self.transaction() as conn:
             conn.executescript(_SCHEMA)
+            self._migrate_columns(conn)
+
+    def _migrate_columns(self, conn: sqlite3.Connection) -> None:
+        """为旧版数据库补齐新增列（幂等迁移）。"""
+        existing = {
+            row["name"] for row in conn.execute("PRAGMA table_info(notes)")
+        }
+        migrations = (
+            ("source_path", "ALTER TABLE notes ADD COLUMN source_path TEXT"),
+            ("source_type", "ALTER TABLE notes ADD COLUMN source_type TEXT"),
+            (
+                "content_type",
+                "ALTER TABLE notes ADD COLUMN content_type TEXT NOT NULL DEFAULT 'md'",
+            ),
+        )
+        for column, ddl in migrations:
+            if column not in existing:
+                conn.execute(ddl)
+                logger.info("数据库迁移：新增列 notes.%s", column)
 
     @contextmanager
     def transaction(self) -> Iterator[sqlite3.Connection]:
@@ -97,6 +120,11 @@ class Database:
             is_deleted=bool(row["is_deleted"]),
             summary=row["summary"] if "summary" in keys else "",
             content=row["content"] if full_content else None,
+            source_path=row["source_path"] if "source_path" in keys else None,
+            source_type=row["source_type"] if "source_type" in keys else None,
+            content_type=(
+                row["content_type"] if "content_type" in keys else "md"
+            ),
         )
 
     # ---------- 查询 ----------
@@ -143,15 +171,35 @@ class Database:
 
     # ---------- 变更 ----------
 
-    def create_note(self, title: str = "未命名笔记", content: str = "") -> int:
-        """新建笔记，返回新笔记 id。"""
+    def create_note(
+        self,
+        title: str = "未命名笔记",
+        content: str = "",
+        source_path: Optional[str] = None,
+        source_type: Optional[str] = None,
+        content_type: str = "md",
+    ) -> int:
+        """新建笔记，返回新笔记 id。
+
+        content_type：md（Markdown 笔记）/ docx（Word 富文本）/ pdf（渲染查看）。
+        source_* 用于记录导入文档的来源。
+        """
         now = datetime.now().isoformat(timespec="seconds")
-        sql = """INSERT INTO notes (title, content, created_at, updated_at)
-                 VALUES (:title, :content, :created, :updated)"""
+        sql = """INSERT INTO notes
+                 (title, content, created_at, updated_at, source_path, source_type, content_type)
+                 VALUES (:title, :content, :created, :updated, :source_path, :source_type, :content_type)"""
         with self.transaction() as conn:
             cursor = conn.execute(
                 sql,
-                {"title": title, "content": content, "created": now, "updated": now},
+                {
+                    "title": title,
+                    "content": content,
+                    "created": now,
+                    "updated": now,
+                    "source_path": source_path,
+                    "source_type": source_type,
+                    "content_type": content_type,
+                },
             )
             return int(cursor.lastrowid)
 

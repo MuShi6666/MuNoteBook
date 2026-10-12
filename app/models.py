@@ -23,6 +23,11 @@ class Note:
     is_deleted: bool = False
     summary: str = ""
     content: str | None = field(default=None, repr=False)
+    # 导入文档的来源信息（可选）：库内原件路径与文档类型（md/txt/docx/pdf）
+    source_path: str | None = None
+    source_type: str | None = None
+    # 内容类型：md（Markdown）/ docx（Word 富文本）/ pdf（渲染查看）
+    content_type: str = "md"
 
     @property
     def updated_at_display(self) -> str:

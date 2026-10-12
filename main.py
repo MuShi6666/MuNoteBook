@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sys
 
-from PySide6.QtGui import QColor
+from PySide6.QtGui import QColor, QIcon
 from PySide6.QtWidgets import QApplication
 from qfluentwidgets import Theme, setTheme, setThemeColor
 
@@ -39,6 +39,8 @@ def load_app_qss(app: QApplication) -> None:
 def main() -> None:
     app = QApplication(sys.argv)
     app.setApplicationName(config.APP_NAME)
+    if config.LOGO_PATH.is_file():
+        app.setWindowIcon(QIcon(str(config.LOGO_PATH)))
 
     apply_theme_from_settings()
     load_app_qss(app)

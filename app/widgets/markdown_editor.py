@@ -404,7 +404,7 @@ class MarkdownEditor(QWidget):
         # 注意：路径必须以 "/" 结尾，否则 QUrl 会把它当作文件而非目录，
         # 相对路径解析时会丢失最后一段目录名。
         self.preview_area.document().setBaseUrl(
-            QUrl.fromLocalFile(str(config.APP_ROOT) + "/")
+            QUrl.fromLocalFile(str(config.storage_root()) + "/")
         )
         self.preview_area.setHtml(html_text)
 

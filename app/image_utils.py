@@ -24,6 +24,10 @@ SUPPORTED_EXTENSIONS = (".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp")
 
 # Markdown 图片语法：![alt](images/xxx.png)
 _IMAGE_PATTERN = re.compile(r"!\[[^\]]*\]\(\s*(images/[^)\s]+?)\s*\)")
+# HTML 图片语法（富文本编辑器）：<img src="images/xxx.png" ...>
+_HTML_IMAGE_PATTERN = re.compile(
+    r"""<img[^>]+src=["'](images/[^"'\s>]+?)["']""", re.IGNORECASE
+)
 
 
 def ensure_images_dir() -> Path:
@@ -76,8 +80,38 @@ def import_image_markdown(src: Union[str, Path], alt: str = "") -> str:
     return image_markdown(save_image_file(src), alt)
 
 
+def save_image_bytes(data: bytes, extension: str = ".png") -> Path:
+    """把图片字节流（如 docx 内嵌图片）保存进图片库，返回库内路径。"""
+    ensure_images_dir()
+    dest = config.IMAGES_DIR / _unique_name(extension)
+    dest.write_bytes(data)
+    return dest
+
+
+def library_relative_src(lib_path: Path) -> str:
+    """库内图片相对存储根目录的 posix 路径（供 HTML img src 使用）。"""
+    try:
+        relative = Path(lib_path).resolve().relative_to(
+            config.storage_root().resolve()
+        )
+        return relative.as_posix()
+    except ValueError:
+        return f"images/{Path(lib_path).name}"
+
+
+def image_html(lib_path: Path, alt: str = "") -> str:
+    """生成库内图片的 HTML img 标签（相对路径 src）。"""
+    safe_alt = html.escape(alt or "", quote=True)
+    return f'<img src="{library_relative_src(lib_path)}" alt="{safe_alt}" />'
+
+
+def import_image_html(src: Union[str, Path], alt: str = "") -> str:
+    """复制外部图片到图片库并返回其 HTML img 标签。"""
+    return image_html(save_image_file(src), alt)
+
+
 def extract_image_paths(content: str) -> list[Path]:
-    """提取 Markdown 内容引用的库内图片绝对路径。
+    """提取内容（Markdown 或 HTML）引用的库内图片绝对路径。
 
     仅返回位于图片库目录内的路径（带目录安全检查），
     外链图片与其他目录的本地图片不在清理范围。
@@ -85,20 +119,22 @@ def extract_image_paths(content: str) -> list[Path]:
     paths: list[Path] = []
     if not content:
         return paths
-    images_root = config.IMAGES_DIR.resolve()
-    for match in _IMAGE_PATTERN.finditer(content):
-        candidate = (config.APP_ROOT / match.group(1)).resolve()
-        try:
-            candidate.relative_to(images_root)
-        except ValueError:
-            continue
-        if candidate not in paths:
-            paths.append(candidate)
+    storage_root = config.storage_root().resolve()
+    images_root = config.images_dir().resolve()
+    for pattern in (_IMAGE_PATTERN, _HTML_IMAGE_PATTERN):
+        for match in pattern.finditer(content):
+            candidate = (storage_root / match.group(1)).resolve()
+            try:
+                candidate.relative_to(images_root)
+            except ValueError:
+                continue
+            if candidate not in paths:
+                paths.append(candidate)
     return paths
 
 
 def remove_images_in_content(content: str) -> int:
-    """删除一段 Markdown 内容引用的库内图片文件，返回成功删除的数量。"""
+    """删除一段内容（Markdown 或 HTML）引用的库内图片文件。"""
     removed = 0
     for path in extract_image_paths(content):
         try:
