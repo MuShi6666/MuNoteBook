@@ -1,0 +1,142 @@
+/* Fluent 记事本 - 全局 QSS 样式（静态部分）
+ * 主题相关颜色（卡片/列表文字）由 app.main_window.build_app_qss()
+ * 在启动和主题切换时动态追加，此处仅放不随主题变化的样式。
+ */
+
+/* ============ 页面容器 ============ */
+#listPanel,
+#trashHint,
+#settingsView {
+    background: transparent;
+}
+
+/* ============ 设置卡片 ============ */
+#settingCard {
+    border-radius: 8px;
+}
+
+BodyLabel#captionLabel {
+    font-size: 12px;
+    color: rgba(128, 128, 128, 0.95);
+}
+
+/* ============ 空状态 ============ */
+QLabel#emptyLabel {
+    font-size: 14px;
+    color: rgba(128, 128, 128, 0.95);
+}
+
+/* ============ 笔记列表 ============ */
+QListWidget#noteListWidget {
+    background: transparent;
+    border: none;
+    outline: 0;
+}
+
+QListWidget#noteListWidget::item {
+    border-radius: 8px;
+    margin: 2px 4px;
+    padding: 0px;
+}
+
+QListWidget#noteListWidget::item:hover {
+    background: rgba(128, 128, 128, 0.10);
+}
+
+QListWidget#noteListWidget::item:selected {
+    background: rgba(128, 128, 128, 0.22);
+}
+
+/* ============ 笔记列表项 ============ */
+NoteItemWidget {
+    background: transparent;
+}
+
+NoteItemWidget QLabel#titleLabel {
+    font-size: 14px;
+    font-weight: 600;
+    background: transparent;
+}
+
+NoteItemWidget QLabel#summaryLabel {
+    font-size: 12px;
+    background: transparent;
+}
+
+NoteItemWidget QLabel#timeLabel {
+    font-size: 11px;
+    background: transparent;
+}
+
+/* ============ 编辑器标题 ============ */
+LineEdit#titleEdit {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* ============ Markdown 编辑器（常亮设计） ============ */
+/* 编辑/预览区始终为白底深字；QSS 的 color 会同步到 palette Text 角色，
+ * 因此文本光标（caret）在深浅主题下均为黑色。
+ */
+MarkdownEditor QPlainTextEdit#editArea {
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    font-family: Consolas, "Microsoft YaHei", "Segoe UI", sans-serif;
+    font-size: 14px;
+    color: #000000;
+    background: #ffffff;
+    selection-background-color: rgba(0, 103, 192, 0.3);
+    selection-color: #ffffff;
+}
+
+MarkdownEditor QTextBrowser#previewArea {
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    color: #1a1a1a;
+    background: #ffffff;
+}
+
+MarkdownEditor QSplitter::handle {
+    background: rgba(128, 128, 128, 0.2);
+}
+
+/* ============ 滚动条 ============ */
+QScrollBar:vertical {
+    width: 10px;
+    background: transparent;
+    margin: 2px;
+}
+
+QScrollBar:horizontal {
+    height: 10px;
+    background: transparent;
+    margin: 2px;
+}
+
+QScrollBar::handle:vertical,
+QScrollBar::handle:horizontal {
+    background: rgba(128, 128, 128, 0.35);
+    border-radius: 5px;
+}
+
+QScrollBar::handle:vertical:hover,
+QScrollBar::handle:horizontal:hover {
+    background: rgba(128, 128, 128, 0.55);
+}
+
+QScrollBar::add-line,
+QScrollBar::sub-line,
+QScrollBar::add-page,
+QScrollBar::sub-page {
+    background: transparent;
+    border: none;
+}
+
+/* ============ 工具栏 ============ */
+QToolBar {
+    background: transparent;
+    border: none;
+    spacing: 6px;
+}

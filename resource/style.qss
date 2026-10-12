@@ -1,0 +1,92 @@
+/* ============================================================
+ *  记事本 · 全局 QSS
+ *  说明：@xxx@ 为颜色占位符，由 app/theme.py 在启动时
+ *        按浅色 / 深色主题替换后应用到 QApplication
+ * ============================================================ */
+
+/* ---------------- 工具栏 ---------------- */
+#noteToolBar {
+    background-color: @toolbarBg@;
+    border-bottom: 1px solid @borderColor@;
+}
+
+#noteToolBar ToolButton {
+    border: none;
+    border-radius: 6px;
+}
+
+#noteToolBar ToolButton:hover {
+    background-color: @hoverBg@;
+}
+
+#noteToolBar ToolButton:pressed {
+    background-color: @pressedBg@;
+}
+
+#noteToolBar CheckBox {
+    color: @textColor@;
+}
+
+/* ---------------- 查找 / 替换栏 ---------------- */
+#findBar {
+    background-color: @findBarBg@;
+    border-bottom: 1px solid @borderColor@;
+}
+
+#findBar ToolButton {
+    border: none;
+    border-radius: 6px;
+}
+
+#findBar ToolButton:hover {
+    background-color: @hoverBg@;
+}
+
+#findBar ToolButton:pressed {
+    background-color: @pressedBg@;
+}
+
+#findBar CheckBox {
+    color: @textColor@;
+}
+
+/* ---------------- 文本编辑区 ---------------- */
+#noteEditor {
+    border: none;
+    background-color: @editorBg@;
+    selection-background-color: @selectionBg@;
+}
+
+/* ---------------- 状态栏 ---------------- */
+#statusBar {
+    background-color: @statusBarBg@;
+    border-top: 1px solid @borderColor@;
+}
+
+#statusBar QLabel {
+    color: @secondaryText@;
+    background: transparent;
+}
+
+/* ---------------- 设置页 ---------------- */
+#settingsCard {
+    background-color: @cardBg@;
+    border: 1px solid @borderColor@;
+    border-radius: 8px;
+}
+
+#settingsCardTitle {
+    color: @textColor@;
+    background: transparent;
+}
+
+#settingsCard BodyLabel,
+#settingsCard CaptionLabel {
+    background: transparent;
+    color: @textColor@;
+}
+
+#settingsCard CheckBox,
+#settingsCard RadioButton {
+    color: @textColor@;
+}
